@@ -93,3 +93,4 @@ main.go
 ## 参考
 
 - [Ebitengine公式サイト](https://ebitengine.org/ja/)
+# wasm-go-conference-mini-in-sendai-2026
