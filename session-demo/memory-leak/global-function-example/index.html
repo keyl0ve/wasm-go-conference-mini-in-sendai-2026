@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>グローバル関数公開デモ（推奨パターン）</title>
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(
+        fetch("main.wasm"),
+        go.importObject,
+      ).then((result) => {
+        go.run(result.instance);
+      });
+    </script>
+  </head>
+  <body>
+    <h1>グローバル関数公開デモ（理想的な例）</h1>
+    <p>
+      js.Global().Set() で Go 関数を1つだけグローバルに公開し、onclick
+      から呼び出しています。
+    </p>
+
+    <h2>シンプルな onclick</h2>
+    <button onclick="handleClick()">Click Me</button>
+    <p id="output" style="min-height: 1.5em"></p>
+
+    <h2>カウンター（何度呼んでもメモリリークしない）</h2>
+    <button onclick="incrementCounter()">Increment</button>
+    <p>Count: <span id="counter">0</span></p>
+
+    <div
+      style="
+        margin-top: 2em;
+        padding: 1em;
+        background: #f0f8ff;
+        border-radius: 5px;
+      "
+    >
+      <h3>メリット:</h3>
+      <ul>
+        <li>✅ addEventListener を Go で使わない → リスナーが増えない</li>
+        <li>✅ js.FuncOf は main で1回だけ → Release 管理がシンプル</li>
+        <li>✅ プログラムが終わるまで使うので Release しなくても実害なし</li>
+        <li>✅ コードがシンプルで読みやすい</li>
+      </ul>
+      <p>
+        <strong>補足:</strong> ブラウザでは js.Global().Set() + onclick
+        がシンプルで実用的です。
+      </p>
+    </div>
+  </body>
+</html>

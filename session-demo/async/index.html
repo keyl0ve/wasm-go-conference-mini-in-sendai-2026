@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Go WASM Async Demo</title>
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(
+        fetch("main.wasm"),
+        go.importObject,
+      ).then((result) => {
+        go.run(result.instance);
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Go WASM 非同期処理デモ</h1>
+    <p>
+      goroutine
+      で重い処理をバックグラウンド実行し、完了時にコールバックで結果を受け取ります。
+    </p>
+    <button onclick="runTask()">処理開始</button>
+    <div id="result"></div>
+    <script>
+      window.onTaskComplete = (result) => {
+        const el = document.getElementById("result");
+        el.textContent = "結果: " + result;
+      };
+
+      function runTask() {
+        const el = document.getElementById("result");
+        el.textContent = "処理中...";
+        startHeavyTask();
+      }
+    </script>
+  </body>
+</html>

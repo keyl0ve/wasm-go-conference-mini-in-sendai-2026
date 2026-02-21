@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Panic デモ（良い例）</title>
+  <script src="wasm_exec.js"></script>
+  <script>
+    const go = new Go();
+    WebAssembly.instantiateStreaming(
+      fetch("main.wasm"),
+      go.importObject,
+    ).then((result) => {
+      go.run(result.instance);
+    });
+  </script>
+</head>
+<body>
+  <h1>Panic デモ（良い例）</h1>
+  <p>defer + recover で panic を捕捉。WASM は止まらず、再度ボタンを押せます。</p>
+
+  <button onclick="triggerPanic()">Trigger Panic</button>
+  <button onclick="ping()">Ping（WASM が生きているか確認）</button>
+
+  <p id="output" style="margin-top: 1em; min-height: 1.5em;">ここに結果が表示されます。</p>
+
+  <p style="margin-top: 2em; font-size: 0.9em; color: #666;">
+    手順: 「Trigger Panic」を押す → 画面上に recovered メッセージが表示される → そのまま「Ping」や「Trigger Panic」を何度でも押せる（WASM は継続動作）。
+  </p>
+</body>
+</html>

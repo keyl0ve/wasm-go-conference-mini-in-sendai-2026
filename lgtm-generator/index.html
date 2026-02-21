@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LGTM 画像ジェネレーター</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>LGTM 画像ジェネレーター</h1>
+      <p class="description">
+        画像をアップロードして、中央にテキストを描画した JPEG
+        をダウンロードできます。
+      </p>
+
+      <div class="controls">
+        <div class="field">
+          <label for="file">画像 (JPEG)</label>
+          <input type="file" id="file" accept="image/jpeg,image/jpg" />
+        </div>
+        <div class="field">
+          <label for="text">テキスト</label>
+          <input type="text" id="text" placeholder="LGTM" value="LGTM" />
+        </div>
+        <div class="field">
+          <label for="fontSize">フォントサイズ (10–500)</label>
+          <input type="number" id="fontSize" min="10" max="500" value="48" />
+        </div>
+        <div class="field">
+          <label for="color">テキスト色</label>
+          <input type="color" id="color" value="#ffffff" />
+        </div>
+        <button type="button" id="process" disabled>処理する</button>
+      </div>
+
+      <div id="message" class="message" role="alert" aria-live="polite"></div>
+      <div class="preview-area">
+        <img id="preview" alt="プレビュー" class="preview-img" hidden />
+      </div>
+      <div class="download-area" id="downloadArea" hidden>
+        <a id="download" download="lgtm.jpg" class="download-btn"
+          >JPEG をダウンロード</a
+        >
+      </div>
+    </div>
+
+    <script src="wasm_exec.js"></script>
+    <script>
+      const fileInput = document.getElementById("file");
+      const textInput = document.getElementById("text");
+      const fontSizeInput = document.getElementById("fontSize");
+      const colorInput = document.getElementById("color");
+      const processBtn = document.getElementById("process");
+      const messageEl = document.getElementById("message");
+      const previewImg = document.getElementById("preview");
+      const downloadArea = document.getElementById("downloadArea");
+      const downloadLink = document.getElementById("download");
+
+      let lastBase64 = null;
+
+      function showMessage(text, isError) {
+        messageEl.textContent = text;
+        messageEl.className = "message " + (isError ? "error" : "info");
+        messageEl.hidden = !text;
+      }
+
+      function setPreview(dataUrl) {
+        if (dataUrl) {
+          previewImg.src = dataUrl;
+          previewImg.hidden = false;
+          downloadLink.href = dataUrl;
+          downloadArea.hidden = false;
+        } else {
+          previewImg.hidden = true;
+          downloadArea.hidden = true;
+        }
+      }
+
+      function processCurrentImage() {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) {
+          showMessage("画像を選択してください。", true);
+          return;
+        }
+        if (typeof processImage !== "function") {
+          showMessage("WASM がまだ読み込まれていません。", true);
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function () {
+          const dataUrl = reader.result;
+          const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, "");
+          const text = textInput.value.trim() || "LGTM";
+          const fontSize = Math.max(
+            10,
+            Math.min(500, parseInt(fontSizeInput.value, 10) || 48),
+          );
+          const colorHex = colorInput.value;
+
+          const out = processImage(base64, text, fontSize, colorHex);
+          const result = out.result;
+          const err = out.error;
+
+          if (err) {
+            showMessage(err, true);
+            setPreview(null);
+            return;
+          }
+          lastBase64 = result;
+          setPreview("data:image/jpeg;base64," + result);
+          showMessage("処理が完了しました。", false);
+        };
+        reader.readAsDataURL(file);
+      }
+
+      let debounceTimer = null;
+      function debounceProcess() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(processCurrentImage, 500);
+      }
+
+      fileInput.addEventListener("change", function () {
+        processBtn.disabled = !fileInput.files || fileInput.files.length === 0;
+        setPreview(null);
+        showMessage("");
+
+        if (fileInput.files && fileInput.files.length > 0) {
+          processCurrentImage();
+        }
+      });
+
+      textInput.addEventListener("input", debounceProcess);
+      fontSizeInput.addEventListener("input", debounceProcess);
+      colorInput.addEventListener("input", debounceProcess);
+
+      processBtn.addEventListener("click", processCurrentImage);
+
+      // Load WebAssembly
+      async function loadWasm() {
+        try {
+          const go = new Go();
+          const resp = await fetch("main.wasm");
+          if (!resp.ok) throw new Error("main.wasm の読み込みに失敗しました");
+          const buf = await resp.arrayBuffer();
+          const mod = await WebAssembly.instantiate(buf, go.importObject);
+          go.run(mod.instance);
+          showMessage(
+            "WASM の読み込みが完了しました。画像を選択すると自動で処理されます。",
+            false,
+          );
+        } catch (e) {
+          showMessage("WASM 読み込みエラー: " + e.message, true);
+          console.error(e);
+        }
+      }
+      loadWasm();
+    </script>
+  </body>
+</html>

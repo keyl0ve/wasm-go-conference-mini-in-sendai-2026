@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>スタックトレース デモ</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      background: #f5f5f5;
+      color: #222;
+    }
+    h1 { font-size: 1.6rem; margin-bottom: 4px; }
+    .subtitle { color: #666; margin-bottom: 24px; font-size: 0.95rem; }
+    .notice {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 10px 16px;
+      margin-bottom: 24px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .buttons { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.85; }
+    #btn-simple  { background: #4caf50; color: #fff; }
+    #btn-nested  { background: #2196f3; color: #fff; }
+    #btn-nil     { background: #f44336; color: #fff; }
+    #output-section { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    #output-section h2 { font-size: 1.1rem; margin-top: 0; }
+    #output {
+      white-space: pre;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      min-height: 80px;
+    }
+    .hint {
+      background: #e8f4fd;
+      border-left: 4px solid #2196f3;
+      padding: 12px 16px;
+      margin-top: 20px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+    }
+    .hint h3 { margin: 0 0 8px; font-size: 0.95rem; }
+    .hint ul { margin: 0; padding-left: 18px; }
+    .hint li { margin-bottom: 4px; }
+    code { background: #eee; padding: 1px 5px; border-radius: 3px; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <h1>スタックトレース デモ</h1>
+  <p class="subtitle">panic 発生時のスタックトレースを実際に読む練習</p>
+
+  <div class="notice">
+    💡 DevTools の Console も開いておくと、ブラウザのネイティブなエラー表示と比較できます（F12 または Cmd+Option+I）
+  </div>
+
+  <div class="buttons">
+    <button id="btn-simple" onclick="triggerSimplePanic()">① シンプル panic</button>
+    <button id="btn-nested" onclick="triggerNestedPanic()">② ネスト panic（A→B→C）</button>
+    <button id="btn-nil"    onclick="triggerNilPanic()">③ nil 参照 panic</button>
+  </div>
+
+  <div id="output-section">
+    <h2>スタックトレース出力</h2>
+    <pre id="output">← ボタンを押すとここにスタックトレースが表示されます</pre>
+  </div>
+
+  <div class="hint">
+    <h3>読み方のポイント</h3>
+    <ul>
+      <li><strong>下から上に追う</strong>：一番下が最初の呼び出し元、上に行くほど直接の原因に近い</li>
+      <li><strong>自分のコードに注目</strong>：<code>main.</code> で始まる行が自分が書いた関数</li>
+      <li><strong>行番号を確認</strong>：<code>main.go:XX</code> の番号でソースの該当行を特定できる</li>
+      <li><strong>② ネスト</strong>：<code>funcC → funcB → funcA → triggerNestedPanic</code> の順に並ぶことを確認しよう</li>
+      <li><strong>③ nil参照</strong>：<code>runtime error: invalid memory address or nil pointer dereference</code> と出る</li>
+    </ul>
+  </div>
+
+  <script src="wasm_exec.js"></script>
+  <script>
+    const go = new Go();
+    WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then(result => {
+      go.run(result.instance);
+    });
+  </script>
+</body>
+</html>

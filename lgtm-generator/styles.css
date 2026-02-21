@@ -1,0 +1,139 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 1rem;
+  background: #f5f5f5;
+  color: #333;
+}
+
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.description {
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.field input[type="text"],
+.field input[type="number"] {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.field input[type="file"] {
+  font-size: 0.875rem;
+}
+
+.field input[type="color"] {
+  width: 100%;
+  max-width: 80px;
+  height: 2.5rem;
+  padding: 2px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#process {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  background: #333;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#process:hover:not(:disabled) {
+  background: #555;
+}
+
+#process:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+.message {
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.message.info {
+  background: #e8f4fd;
+  color: #0c5460;
+}
+
+.message.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.preview-area {
+  margin: 1rem 0;
+  min-height: 80px;
+}
+
+.preview-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.download-area {
+  margin-top: 1rem;
+}
+
+.download-btn {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  color: #fff;
+  background: #28a745;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.download-btn:hover {
+  background: #218838;
+}

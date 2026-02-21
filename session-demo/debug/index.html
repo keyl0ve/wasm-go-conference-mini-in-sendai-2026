@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Go WASM Debug Demo</title>
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then(
+        (result) => {
+          go.run(result.instance);
+        },
+      );
+    </script>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+      .notice {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 4px;
+        padding: 12px 16px;
+        margin-bottom: 24px;
+      }
+      .section {
+        margin-bottom: 24px;
+        padding: 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .section h2 {
+        margin-top: 0;
+        font-size: 1rem;
+      }
+      input {
+        margin-right: 8px;
+        padding: 4px 8px;
+      }
+      button {
+        padding: 4px 12px;
+        cursor: pointer;
+      }
+      code {
+        background: #f4f4f4;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Go WASM Debug Demo</h1>
+    <div class="notice">
+      DevTools の <strong>Console タブ</strong>を開いてから各ボタンを押してください。
+    </div>
+
+    <!-- ① fmt.Println -->
+    <div class="section">
+      <h2>① <code>fmt.Println</code> — 文字列をそのまま出力</h2>
+      <p>Go 側: <code>fmt.Println("debug:", value)</code></p>
+      <input id="input1" type="text" value="hello" placeholder="値を入力" />
+      <button onclick="runPrintln()">実行</button>
+    </div>
+
+    <!-- ② fmt.Sprintf -->
+    <div class="section">
+      <h2>② <code>fmt.Sprintf</code> — フォーマットして出力</h2>
+      <p>Go 側: <code>fmt.Printf("key=%v value=%v\n", key, val)</code></p>
+      <input id="input2a" type="text" value="user" placeholder="キー" />
+      <input id="input2b" type="text" value="Alice" placeholder="値" />
+      <button onclick="runSprintf()">実行</button>
+    </div>
+
+    <!-- ③ console.Call -->
+    <div class="section">
+      <h2>③ <code>console.Call("log", ...)</code> — JS console.log を直接呼ぶ</h2>
+      <p>Go 側: <code>js.Global().Get("console").Call("log", label, data)</code></p>
+      <input id="input3a" type="text" value="[DEBUG]" placeholder="ラベル" />
+      <input id="input3b" type="text" value="clicked!" placeholder="データ" />
+      <button onclick="runConsoleCall()">実行</button>
+    </div>
+
+    <script>
+      function runPrintln() {
+        const val = document.getElementById("input1").value;
+        logWithPrintln(val);
+      }
+
+      function runSprintf() {
+        const key = document.getElementById("input2a").value;
+        const val = document.getElementById("input2b").value;
+        logWithSprintf(key, val);
+      }
+
+      function runConsoleCall() {
+        const label = document.getElementById("input3a").value;
+        const data = document.getElementById("input3b").value;
+        logWithConsoleCall(label, data);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>js.Value 参照保持デモ（悪い例）</title>
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(
+        fetch("main.wasm"),
+        go.importObject,
+      ).then((result) => {
+        go.run(result.instance);
+      });
+    </script>
+  </head>
+  <body>
+    <h1>js.Value 参照保持デモ（悪い例）</h1>
+    <p>js.FuncOf で作ったコールバックを Release() せずに登録し続けています。</p>
+
+    <p>登録済みリスナー数: <span id="count">0</span></p>
+    <button onclick="addListener()">Add Listener（1回）</button>
+    <button onclick="addListener100()">Add Listener 100回</button>
+    <br /><br />
+    <button id="target">
+      Test Click（このボタンをクリックすると、登録した全リスナーが発火）
+    </button>
+
+    <p style="margin-top: 2em; font-size: 0.9em; color: #666">
+      <strong>確認方法:</strong> 「Add Listener 100回」を数回押す → 「Test
+      Click」を押すとコンソールに同じ回数だけログが出る。<br />
+      Chrome DevTools → Memory タブで Heap snapshot
+      を撮り、繰り返し登録する前後で比較するとヒープが増えている（メモリリーク）。
+    </p>
+  </body>
+</html>

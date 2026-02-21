@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>js.Value 参照保持デモ（良い例）</title>
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(
+        fetch("main.wasm"),
+        go.importObject,
+      ).then((result) => {
+        go.run(result.instance);
+      });
+    </script>
+  </head>
+  <body>
+    <h1>js.Value 参照保持デモ（良い例）</h1>
+
+    <h2>① Replace Listener（removeEventListener + Release）</h2>
+    <p>置き換え回数: <span id="replaceCount">0</span></p>
+    <button onclick="replaceListener()">Replace Listener</button>
+    <br /><br />
+    <button id="target">Test Click</button>
+    <p>
+      Replace を何回押しても、常に1つのリスナーだけ。Release()
+      で解放しているのでメモリリークしない。
+    </p>
+
+    <h2>② onclick + Go 関数をグローバルに公開</h2>
+    <button onclick="handleByGo()">Click（onclick で Go を呼ぶ）</button>
+    <p id="output2" style="min-height: 1.5em"></p>
+    <p>
+      addEventListener を Go で使わず、onclick で Go
+      側の関数を1つだけ公開。リスナー管理不要。
+    </p>
+
+    <p style="margin-top: 2em; font-size: 0.9em; color: #666">
+      Heap snapshot を取っても、Replace
+      を繰り返してもヒープが増え続けないことを確認できる。
+    </p>
+  </body>
+</html>

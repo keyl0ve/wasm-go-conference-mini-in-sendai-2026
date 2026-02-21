@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Go WASM Add Demo</title>
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(
+        fetch("main.wasm"),
+        go.importObject,
+      ).then((result) => {
+        go.run(result.instance);
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Go WASM Add Demo</h1>
+    <p>Go の add 関数を JavaScript から呼び出すデモです。</p>
+    <button onclick="calculate()">計算</button>
+    <div id="result"></div>
+    <script>
+      function calculate() {
+        const result = add(3, 5);
+        document.getElementById("result").textContent = "結果: " + result;
+      }
+    </script>
+  </body>
+</html>
